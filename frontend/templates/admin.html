@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Chatbot Tienda de Abastos</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <style>
+        .admin-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .admin-subtitle {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            margin: 1rem 0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab {
+            display: inline-block;
+            padding: .75rem 1rem;
+            background: #ecf0f1;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: #3498db;
+            color: #fff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card,
+        .panel-card {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .08);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .panel-card {
+            margin-bottom: 1rem;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 720px;
+        }
+
+        th,
+        td {
+            padding: .75rem;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #2c3e50;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .btn-small {
+            padding: .35rem .6rem;
+            font-size: .8rem;
+        }
+
+        .user-actions,
+        .solicitud-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+        }
+
+        .status-badge,
+        .role-badge {
+            display: inline-block;
+            padding: .2rem .55rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active,
+        .status-badge.aprobada {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.inactive,
+        .status-badge.rechazada {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge.pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .role-badge {
+            background: #e8f4fd;
+            color: #1f4f7a;
+        }
+
+        .btn-approve {
+            background: #2ecc71;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: .4rem .7rem;
+            cursor: pointer;
+        }
+
+        .btn-reject {
+            background: #e74c3c;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: .4rem .7rem;
+            cursor: pointer;
+        }
+
+        .btn-delete {
+            background: #95a5a6;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: .4rem .7rem;
+            cursor: pointer;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin: 1rem 0;
+            align-items: center;
+        }
+
+        #message {
+            margin: 1rem 0;
+            padding: .85rem 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        #message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        #message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: .85rem;
+        }
+
+        .info-item strong {
+            display: block;
+            color: #2c3e50;
+            margin-bottom: .25rem;
+        }
+
+        pre.log-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 8px;
+            max-height: 280px;
+            overflow: auto;
+            font-size: .8rem;
+            white-space: pre-wrap;
+        }
+
+        .empty-state {
+            padding: 2rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .text-muted {
+            color: #888;
+            font-size: .85rem;
+        }
+
+        .modal-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-user-shield"></i>
+                <span>Panel de Administración</span>
+            </div>
+            <nav class="auth-buttons app-nav">
+                <a href="/" class="btn btn-outline"><i class="fas fa-home"></i> Inicio</a>
+                <a href="/status" class="btn btn-outline"><i class="fas fa-heartbeat"></i> Monitor</a>
+                <a href="/qr-scanner" class="btn btn-success"><i class="fas fa-qrcode"></i> QR</a>
+            </nav>
+        </header>
+
+        <p class="admin-subtitle">Gestión de usuarios, solicitudes, productos, sincronización y aprendizaje del chatbot.
+        </p>
+        <div id="message"></div>
+
+        <div class="tabs">
+            <button class="tab active" type="button" onclick="showTab('usuarios', this)">Usuarios</button>
+            <button class="tab" type="button" onclick="showTab('solicitudes', this)">Solicitudes</button>
+            <button class="tab" type="button" onclick="showTab('productos', this)">Productos</button>
+            <button class="tab" type="button" onclick="showTab('sincronizacion', this)">Sincronización</button>
+            <button class="tab" type="button" onclick="showTab('aprendizaje', this)">Aprendizaje</button>
+        </div>
+
+        <section id="usuarios" class="tab-content active">
+            <div id="statsGrid" class="stats-grid"></div>
+            <div class="toolbar">
+                <button class="btn btn-primary" type="button" onclick="openCreateUserModal()">
+                    <i class="fas fa-user-plus"></i> Crear Usuario
+                </button>
+                <button class="btn btn-outline" type="button" onclick="loadUsers()">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="solicitudes" class="tab-content">
+            <div class="toolbar">
+                <button class="btn btn-outline" type="button" onclick="loadSolicitudes()">
+                    <i class="fas fa-sync-alt"></i> Actualizar solicitudes
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Rol</th>
+                            <th>Comentarios</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="solicitudesTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="productos" class="tab-content">
+            <div class="toolbar">
+                <button class="btn btn-outline" type="button" onclick="loadProductos()">
+                    <i class="fas fa-sync-alt"></i> Actualizar productos
+                </button>
+                <span id="productosCount" class="stat-label"></span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productosTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="sincronizacion" class="tab-content">
+            <div class="panel-card">
+                <h2>Estado de sincronización</h2>
+                <div id="syncInfo" class="info-grid"></div>
+                <div class="toolbar">
+                    <button class="btn btn-primary" type="button" onclick="runSyncNow()">Sincronizar ahora</button>
+                    <button class="btn btn-outline" type="button" onclick="startAutoSync()">Activar auto-sync</button>
+                    <button class="btn btn-outline" type="button" onclick="stopAutoSync()">Detener auto-sync</button>
+                    <button class="btn btn-outline" type="button" onclick="loadSyncLogs()">Ver logs</button>
+                </div>
+                <pre id="syncLogs" class="log-box" style="display:none;"></pre>
+            </div>
+            <div class="panel-card">
+                <h2>Estado del índice</h2>
+                <div id="syncIndexInfo" class="info-grid"></div>
+            </div>
+        </section>
+
+        <section id="aprendizaje" class="tab-content">
+            <div class="panel-card">
+                <h2>Sistema de aprendizaje automático</h2>
+                <div id="learningInfo" class="info-grid"></div>
+                <div class="toolbar">
+                    <button class="btn btn-outline" type="button" onclick="loadLearning()">Actualizar insights</button>
+                </div>
+                <pre id="learningDetails" class="log-box"></pre>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal-overlay" id="userModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Crear Usuario</h2>
+                <button class="close-modal" type="button" onclick="closeUserModal()" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="userForm">
+                <div class="form-group"><label for="userName">Nombre</label><input id="userName" required></div>
+                <div class="form-group"><label for="userEmail">Email</label><input id="userEmail" type="email" required>
+                </div>
+                <div class="form-group"><label for="userPassword">Contraseña</label><input id="userPassword"
+                        type="password"></div>
+                <div class="form-group">
+                    <label for="userRole">Rol</label>
+                    <select id="userRole">
+                        <option value="empleado">empleado</option>
+                        <option value="admin">admin</option>
+                        <option value="administrador">administrador</option>
+                        <option value="dueño">dueño</option>
+                    </select>
+                </div>
+                <div class="form-group"><label><input type="checkbox" id="userActive" checked> Activo</label></div>
+                <div class="form-group"><label><input type="checkbox" id="userSpecial"> Permisos especiales</label>
+                </div>
+                <button class="btn btn-primary btn-block" type="submit">Guardar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="solicitudModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="solicitudModalTitle">Procesar Solicitud</h2>
+                <button class="close-modal" type="button" onclick="closeSolicitudModal()" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="solicitudForm">
+                <input type="hidden" id="solicitudEstado">
+                <p id="solicitudResumen" class="modal-info"></p>
+                <div class="form-group" id="rolGroup" style="display:none;">
+                    <label for="solicitudRol">Rol asignado</label>
+                    <select id="solicitudRol">
+                        <option value="empleado">empleado</option>
+                        <option value="admin">admin</option>
+                        <option value="administrador">administrador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="solicitudComentarios">Comentarios</label>
+                    <textarea id="solicitudComentarios" rows="3" placeholder="Opcional para el usuario"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" type="submit">Confirmar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/ui.js"></script>
+    <script src="/static/js/admin.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Tienda de Abastos</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <span>Chatbot Tienda de Abastos</span>
+            </div>
+            <div class="auth-buttons app-nav">
+                <a href="/status" class="btn btn-outline" title="Monitor de Estado"><i class="fas fa-heartbeat"></i></a>
+                <button type="button" id="loginBtn" class="btn btn-outline">Iniciar Sesión</button>
+                <button type="button" id="registerBtn" class="btn btn-primary">Registrarse</button>
+                <button type="button" id="logoutBtn" class="btn btn-outline hidden">Cerrar Sesión</button>
+                <a href="/admin" id="adminBtn" class="btn btn-info" style="display: none;">Admin</a>
+                <a href="/qr-scanner" class="btn btn-success" title="Escáner QR"><i class="fas fa-qrcode"></i></a>
+            </div>
+        </header>
+
+        <main class="main">
+            <aside class="sidebar">
+                <div class="sidebar-title">
+                    <span>Sugerencias</span>
+                    <button class="clear-chat-btn" type="button" title="Limpiar chat" aria-label="Limpiar chat">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="suggestions qr-suggestion">
+                    <a href="/qr-scanner" class="suggestion-link">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Escanear código QR de producto</span>
+                    </a>
+                </div>
+                <div id="suggestions" class="suggestions"></div>
+            </aside>
+
+            <section class="chat-container">
+                <div class="chat-header">
+                    <button class="toggle-sidebar" type="button" aria-label="Mostrar sugerencias">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="chat-status">
+                        <span class="status-indicator"></span>
+                        <span>Asistente en línea</span>
+                    </div>
+                    <div class="chat-header-actions">
+                        <button id="shortAnswerBtn" class="input-action answer-style-btn" type="button"
+                            title="Respuestas cortas">
+                            <i class="fas fa-compress-alt"></i>
+                        </button>
+                        <button id="longAnswerBtn" class="input-action answer-style-btn active" type="button"
+                            title="Respuestas largas">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                        <button class="clear-chat-btn" type="button" title="Limpiar chat" aria-label="Limpiar chat">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="chatMessages" class="chat-messages">
+                    <div class="message bot-message">
+                        ¡Hola! Soy el asistente virtual de la tienda de abastos. Puedes hacer preguntas en modo público
+                        o iniciar sesión para funciones completas.
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <div class="input-container">
+                        <input type="text" id="messageInput" placeholder="Escribe tu pregunta aquí...">
+                        <div class="input-actions">
+                            <button id="clearInputBtn" class="input-action" type="button" title="Limpiar texto">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <a href="/qr-scanner" class="input-action" title="Escáner QR">
+                                <i class="fas fa-qrcode"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <button id="sendBtn" class="send-btn" type="button" aria-label="Enviar mensaje">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de Inicio de Sesión -->
+    <div class="modal-overlay" id="loginModal" aria-labelledby="loginModalTitle" aria-modal="true" role="dialog">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="loginModalTitle">Iniciar Sesión</h2>
+                <button class="close-modal" data-close-modal="loginModal" aria-label="Cerrar" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Correo Electrónico</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
+                <div class="text-center mt-3">
+                    <a href="#" id="forgotPasswordLink" class="forgot-password-link">¿Olvidaste tu contraseña?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div class="modal-overlay" id="registerModal" aria-labelledby="registerModalTitle" aria-modal="true" role="dialog">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="registerModalTitle">Registrarse</h2>
+                <button class="close-modal" data-close-modal="registerModal" aria-label="Cerrar" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Nombre</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Correo Electrónico</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Contraseña</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Recuperación de Contraseña -->
+    <div class="modal-overlay" id="forgotPasswordModal" aria-labelledby="forgotPasswordModalTitle" aria-modal="true"
+        role="dialog">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="forgotPasswordModalTitle">Recuperar Contraseña</h2>
+                <button class="close-modal" data-close-modal="forgotPasswordModal" aria-label="Cerrar" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="forgotPasswordForm">
+                <div class="form-group">
+                    <label for="resetEmail">Correo Electrónico</label>
+                    <input type="email" id="resetEmail" required>
+                </div>
+                <p class="modal-info">Recibirás un enlace para restablecer tu contraseña en tu correo electrónico.</p>
+                <button type="submit" class="btn btn-primary btn-block">Enviar Enlace</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Restablecimiento (token en URL desde index) -->
+    <div class="modal-overlay" id="resetPasswordModal" aria-labelledby="resetPasswordModalTitle" aria-modal="true"
+        role="dialog">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="resetPasswordModalTitle">Restablecer Contraseña</h2>
+                <button class="close-modal" data-close-modal="resetPasswordModal" aria-label="Cerrar" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="resetPasswordForm">
+                <input type="hidden" id="resetToken">
+                <div class="form-group">
+                    <label for="newPassword">Nueva Contraseña</label>
+                    <input type="password" id="newPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Contraseña</label>
+                    <input type="password" id="confirmPassword" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Restablecer Contraseña</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/ui.js"></script>
+    <script src="/static/js/chat.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/reset-password.js"></script>
+</body>
+
+</html>

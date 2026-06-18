@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Estado - Sistema de Chatbot</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <style>
+        .monitor-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .08);
+        }
+
+        .metric-card h3 {
+            font-size: .95rem;
+            color: #666;
+            margin-bottom: .5rem;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: .35rem .75rem;
+            border-radius: 999px;
+            font-size: .85rem;
+            font-weight: 600;
+        }
+
+        .badge-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: .75rem;
+        }
+
+        .service-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin: 1rem 0;
+        }
+
+        #status-details {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 8px;
+            max-height: 280px;
+            overflow: auto;
+            font-size: .8rem;
+        }
+
+        .status-error {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="monitor-page">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-heartbeat"></i>
+                <span>Monitor de Estado</span>
+            </div>
+            <nav class="auth-buttons app-nav">
+                <a href="/" class="btn btn-outline"><i class="fas fa-home"></i> Inicio</a>
+                <a href="/admin" class="btn btn-info"><i class="fas fa-user-shield"></i> Admin</a>
+            </nav>
+        </header>
+
+        <section class="metric-card">
+            <h1>Sistema de Chatbot</h1>
+            <p>Monitoreo en tiempo real de servicios, productos y sincronización.</p>
+            <p id="status-summary">Consultando servicios...</p>
+            <p><small>Última actualización: <span id="last-update">—</span></small></p>
+            <div class="actions">
+                <button class="btn btn-primary" type="button" id="refresh-btn">Actualizar ahora</button>
+                <button class="btn btn-outline" type="button" id="force-sync-btn">Forzar sincronización</button>
+            </div>
+        </section>
+
+        <section class="metric-card">
+            <h2>Productos y sincronización</h2>
+            <div class="monitor-grid">
+                <div>
+                    <h3>Productos en BD</h3>
+                    <div class="metric-value" id="product-count">—</div>
+                </div>
+                <div>
+                    <h3>Productos indexados</h3>
+                    <div class="metric-value" id="indexed-count">—</div>
+                </div>
+                <div>
+                    <h3>Estado sync</h3>
+                    <div id="sync-status" class="badge badge-warning">—</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="metric-card">
+            <h2>Servicios</h2>
+            <div class="services-grid">
+                <div class="service-item">
+                    <div>API</div>
+                    <div id="health-status" class="badge badge-warning">—</div>
+                </div>
+                <div class="service-item">
+                    <div>Base de datos</div>
+                    <div id="db-status" class="badge badge-warning">—</div>
+                </div>
+                <div class="service-item">
+                    <div>LLM</div>
+                    <div id="llm-status" class="badge badge-warning">—</div>
+                </div>
+                <div class="service-item">
+                    <div>Embeddings</div>
+                    <div id="embedding-status" class="badge badge-warning">—</div>
+                </div>
+                <div class="service-item">
+                    <div>Sync</div>
+                    <div id="sync-health-status" class="badge badge-warning">—</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="metric-card">
+            <h2>Métricas del sistema</h2>
+            <div class="monitor-grid">
+                <div>
+                    <h3>CPU %</h3>
+                    <div class="metric-value" id="cpu-usage">—</div>
+                </div>
+                <div>
+                    <h3>Memoria %</h3>
+                    <div class="metric-value" id="memory-usage">—</div>
+                </div>
+                <div>
+                    <h3>Caché LLM</h3>
+                    <div class="metric-value" id="llm-cache">—</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="metric-card">
+            <h2>Detalle técnico</h2>
+            <pre id="status-details">{}</pre>
+        </section>
+    </div>
+
+    <!-- Monitor de servicios: updateMetrics -->
+    <script src="/static/js/status.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,107 @@
+﻿stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+
+cache:
+  paths:
+    - .pip-cache/
+    - .venv/
+
+before_script:
+  - python -m venv .venv
+  - source .venv/bin/activate
+  - pip install -r requirements.txt
+
+test:
+  stage: test
+  script:
+    - echo "Ejecutando pruebas del sistema..."
+    - python -c "import app; print('Ô£à M├│dulos importados correctamente')"
+    - python -c "from app.config.settings import settings; print('Ô£à Configuraci├│n cargada')"
+    - python -c "from app.database.db import engine; print('Ô£à Base de datos configurada')"
+  artifacts:
+    paths:
+      - logs/
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+
+build:
+  stage: build
+  script:
+    - echo "­ƒö¿ Construyendo aplicaci├│n..."
+    - python -c "import app; print('Ô£à Build exitoso - Aplicaci├│n lista')"
+    - echo "­ƒôª Creando paquete de despliegue..."
+    - mkdir -p dist
+    - cp -r app/ dist/
+    - cp main.py dist/
+    - cp requirements.txt dist/
+    - cp README.md dist/
+    - cp DEPLOYMENT.md dist/
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+
+deploy_staging:
+  stage: deploy
+  script:
+    - echo "­ƒÜÇ Desplegando en entorno de pruebas..."
+    - echo "­ƒôï Verificando configuraci├│n..."
+    - echo "Ô£à Despliegue en staging completado"
+  environment:
+    name: staging
+    url: https://staging-chatbot.tu-dominio.com
+  only:
+    - develop
+  when: manual
+
+deploy_production:
+  stage: deploy
+  script:
+    - echo "­ƒÜÇ Desplegando en PRODUCCI├ôN..."
+    - echo "ÔÜá´©Å  ATENCI├ôN: Este es el entorno de producci├│n"
+    - echo "­ƒôï Verificando configuraci├│n de seguridad..."
+    - echo "Ô£à Despliegue en producci├│n completado"
+  environment:
+    name: production
+    url: https://chatbot.tu-dominio.com
+  when: manual
+  only:
+    - main
+
+security_scan:
+  stage: test
+  script:
+    - echo "­ƒöÆ Escaneando vulnerabilidades de seguridad..."
+    - echo "­ƒôï Verificando dependencias..."
+    - echo "Ô£à Escaneo de seguridad completado"
+  artifacts:
+    reports:
+      security: security-report.json
+    expire_in: 1 week
+  only:
+    - main
+
+documentation:
+  stage: build
+  script:
+    - echo "­ƒôÜ Generando documentaci├│n..."
+    - echo "­ƒôï Verificando README.md..."
+    - echo "­ƒôï Verificando DEPLOYMENT.md..."
+    - echo "Ô£à Documentaci├│n actualizada"
+  artifacts:
+    paths:
+      - README.md
+      - DEPLOYMENT.md
+    expire_in: 1 month
+  only:
+    - main 

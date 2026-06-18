@@ -1,0 +1,11 @@
+# Para SQLite:
+USE_SQL_SERVER=False
+
+# Para SQL Server:
+USE_SQL_SERVER=True
+DB_SERVER=tu_servidor
+DB_PASSWORD=tu_contraseña
+!.env
+!.env.local
+.env.example
+!.env
